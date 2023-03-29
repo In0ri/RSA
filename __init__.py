@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import random
+import math
 from ast import literal_eval
 from Crypto.Util import number
 
@@ -29,12 +30,10 @@ def euclide(b, m):
 def encrypt(m_raw, e, n):
     c_list = []
     crypt = ''
-    print(m_raw)
     for x in m_raw:
         c_list.append(pow(ord(x), e, n))
     # encode
     crypt = bytes(str(c_list), 'utf-8')
-    print(crypt)
     encoded_bytes = base64.b64encode(crypt)
     mysign = encoded_bytes.decode('utf-8')
     return mysign
@@ -55,18 +54,42 @@ def decrypt(c, d, n):
     return messages
 
 
-def isPrime(a, b):
-    while b != 0:
-        a, b = b, a % b
-    return a == 1
+# def isPrime(a, b):
+#     while b != 0:
+#         a, b = b, a % b
+#     return a == 1
 
 
-def listPrime(phi):
-    coprimes = []
-    for i in range(1, phi + 1):
-        if isPrime(i, phi):
-            coprimes.append(i)
-    return coprimes
+# def listPrime(phi):
+#     coprimes = []
+#     for i in range(1, phi + 1):
+#         if isPrime(i, phi):
+#             coprimes.append(i)
+#     return coprimes
+
+def is_prime(n, k=5):
+    if n <= 3:
+        return n == 2 or n == 3
+
+    r = 0
+    d = n - 1
+    while d % 2 == 0:
+        r += 1
+        d //= 2
+
+    for _ in range(k):
+        a = random.randint(2, n - 2)
+        x = pow(a, d, n)
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(r - 1):
+            x = pow(x, 2, n)
+            if x == n - 1:
+                break
+        else:
+            return False
+    return True
+
 
 
 def hash_file(path):
@@ -99,13 +122,18 @@ def main():
     option = input("\nMoi ban nhap: ")
     while option.upper() != "EXIT":
         if option == '1':
-            p = number.getPrime(11)
-            q = number.getPrime(11)
+            p = number.getPrime(2048)
+            q = number.getPrime(2048)
             # p, q = 79, 53
             # e = 71
             n = p * q
             phi = (p - 1) * (q - 1)
-            e = random.choice(listPrime(phi))
+            # e = random.choice(listPrime(phi))
+
+            while True:
+                e = random.randrange(65537, 2**864)
+                if e % 2 == 1 and is_prime(e):
+                    break
 
             print("e = ", e)
             d = euclide(e, phi)
@@ -149,7 +177,6 @@ def main():
             print("-----Tham so khong hop le. Moi ban nhap lai-----")
             print("------------------------------------------------")
 
-        # menu()
         option = input("\nMoi ban nhap: ")
 
 
